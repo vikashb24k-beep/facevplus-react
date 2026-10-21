@@ -3,7 +3,7 @@ import { Modal } from '../common/Modal'
 import { Button } from '../common/Button'
 import { Badge } from '../common/Badge'
 import { attendanceService } from '../../services/attendanceService'
-import { CheckCircle, XCircle, Check, X, Save, AlertCircle } from 'lucide-react'
+import { Check, X, Save, AlertCircle } from 'lucide-react'
 
 export const AttendanceReviewModal = ({
   isOpen,

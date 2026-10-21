@@ -5,7 +5,6 @@ import {
   School,
   ScanFace,
   Mic,
-  ShieldCheck,
   QrCode,
   BarChart3,
   ArrowRight,

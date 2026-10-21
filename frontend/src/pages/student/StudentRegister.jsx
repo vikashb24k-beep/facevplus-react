@@ -89,7 +89,7 @@ export const StudentRegister = () => {
       timerRef.current = setInterval(() => {
         setRecordingSeconds((prev) => prev + 1)
       }, 1000)
-    } catch (err) {
+    } catch (_err) {
       setError('Microphone access denied. You can proceed without voice enrollment.')
     }
   }

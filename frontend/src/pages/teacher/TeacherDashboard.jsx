@@ -22,7 +22,6 @@ import {
   Download,
   AlertCircle,
   CheckCircle,
-  Users,
 } from 'lucide-react'
 
 export const TeacherDashboard = () => {
@@ -129,7 +128,7 @@ export const TeacherDashboard = () => {
       try {
         await subjectService.deleteSubject(subjectId)
         fetchSubjects()
-      } catch (err) {
+      } catch (_err) {
         alert('Failed to delete subject.')
       }
     }

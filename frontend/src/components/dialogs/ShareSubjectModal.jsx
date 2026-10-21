@@ -1,30 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Modal } from '../common/Modal'
 import { Button } from '../common/Button'
-import { subjectService } from '../../services/subjectService'
 import { QRCodeSVG } from 'qrcode.react'
-import { Copy, Check, QrCode, Link as LinkIcon, Share2 } from 'lucide-react'
+import { Copy, Check } from 'lucide-react'
 
 export const ShareSubjectModal = ({ isOpen, onClose, subject }) => {
   const [copiedLink, setCopiedLink] = useState(false)
   const [copiedCode, setCopiedCode] = useState(false)
-  const [shareData, setShareData] = useState(null)
-  const [loading, setLoading] = useState(false)
 
   const frontendBase = window.location.origin
   const subjectCode = subject?.subject_code || ''
   const joinUrl = `${frontendBase}/student/enroll?code=${subjectCode}`
-
-  useEffect(() => {
-    if (isOpen && subject?.subject_id) {
-      setLoading(true)
-      subjectService
-        .getShareDetails(subject.subject_id)
-        .then((data) => setShareData(data))
-        .catch(() => {})
-        .finally(() => setLoading(false))
-    }
-  }, [isOpen, subject])
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(joinUrl)

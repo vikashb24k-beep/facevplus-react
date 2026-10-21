@@ -41,7 +41,7 @@ export const authService = {
   async logout() {
     try {
       await api.post('/auth/logout')
-    } catch (e) {
+    } catch (_e) {
       // Ignore network errors on logout
     }
     localStorage.removeItem('facevplus_token')

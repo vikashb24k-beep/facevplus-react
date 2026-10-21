@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react'
 import { Modal } from '../common/Modal'
 import { Button } from '../common/Button'
 import { attendanceService } from '../../services/attendanceService'
-import { Mic, Square, Upload, Play, AlertCircle, Volume2, CheckCircle } from 'lucide-react'
+import { Mic, Square, Upload, AlertCircle, Volume2, CheckCircle } from 'lucide-react'
 
 export const VoiceAttendanceModal = ({
   isOpen,
@@ -65,7 +65,7 @@ export const VoiceAttendanceModal = ({
       timerRef.current = setInterval(() => {
         setRecordingTime((prev) => prev + 1)
       }, 1000)
-    } catch (err) {
+    } catch (_err) {
       setError('Microphone permission denied or device not found.')
     }
   }

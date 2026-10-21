@@ -43,7 +43,7 @@ export const StudentDashboard = () => {
         setToastMessage(`Unenrolled from ${subjectName} successfully.`)
         setTimeout(() => setToastMessage(''), 3000)
         fetchEnrolledSubjects()
-      } catch (err) {
+      } catch (_err) {
         alert('Failed to unenroll from course.')
       }
     }

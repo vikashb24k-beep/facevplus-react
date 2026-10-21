@@ -19,7 +19,7 @@ export const AuthProvider = ({ children }) => {
           const userData = await authService.getMe()
           setUser(userData)
           localStorage.setItem('facevplus_user', JSON.stringify(userData))
-        } catch (err) {
+        } catch (_err) {
           console.warn('Session expired or invalid token.')
           setUser(null)
           setToken(null)

@@ -4,7 +4,7 @@ import Webcam from 'react-webcam'
 import { useAuth } from '../../context/AuthContext'
 import { authService } from '../../services/authService'
 import { Button } from '../../components/common/Button'
-import { ScanFace, UserPlus, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { ScanFace, AlertCircle, CheckCircle2 } from 'lucide-react'
 
 export const StudentLogin = () => {
   const [loading, setLoading] = useState(false)
