@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import List, Union
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Root directory of the repository
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
@@ -29,12 +29,13 @@ class Settings(BaseSettings):
     FACE_RESEMBLANCE_THRESHOLD: float = 0.55
     VOICE_RESEMBLANCE_THRESHOLD: float = 0.65
 
-    class Config:
-        env_file = [
+    model_config = SettingsConfigDict(
+        env_file=[
             str(BASE_DIR / "backend" / ".env"),
             str(BASE_DIR / ".env"),
-        ]
-        extra = "ignore"
+        ],
+        extra="ignore",
+    )
 
     def get_cors_origins(self) -> List[str]:
         return [origin.strip() for origin in self.CORS_ORIGINS.split(",") if origin.strip()]

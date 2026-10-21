@@ -115,9 +115,15 @@ def get_subjects_by_teacher(teacher_id: int) -> List[Dict[str, Any]]:
             sub_students[0].get("count", 0) if sub_students and len(sub_students) > 0 else 0
         )
 
-        # Compute unique class count
+        # Compute unique class count — truncate to minute to group records from the same session
         attendance = sub.get("attendance_logs", [])
-        sub["total_classes"] = len(set(log["timestamp"] for log in attendance if "timestamp" in log))
+        unique_sessions = set()
+        for log in attendance:
+            ts = log.get("timestamp", "")
+            if ts:
+                # Truncate to minute: "2026-10-20T10:30:45.123Z" → "2026-10-20T10:30"
+                unique_sessions.add(ts[:16])
+        sub["total_classes"] = len(unique_sessions)
 
         sub.pop("subject_students", None)
         sub.pop("attendance_logs", None)

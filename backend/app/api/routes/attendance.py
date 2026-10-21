@@ -158,6 +158,19 @@ def confirm_attendance_session(
     if subject["teacher_id"] != teacher.id:
         raise HTTPException(status_code=403, detail="Not authorized for this subject.")
 
+    if not req.logs:
+        raise HTTPException(status_code=400, detail="No attendance logs provided.")
+
+    # Validate that all student IDs in the request are actually enrolled in this subject
+    enrolled_students = supabase_service.get_enrolled_students(req.subject_id)
+    enrolled_ids = {s["student_id"] for s in enrolled_students}
+    for item in req.logs:
+        if item.student_id not in enrolled_ids:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Student {item.student_id} is not enrolled in this subject.",
+            )
+
     session_ts = req.timestamp or datetime.now(timezone.utc).isoformat()
 
     logs_to_insert = [

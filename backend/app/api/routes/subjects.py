@@ -26,7 +26,7 @@ def get_teacher_subjects(teacher: UserPayload = Depends(require_teacher)):
 @router.post("", response_model=SubjectResponse)
 def create_new_subject(
     req: SubjectCreate,
-    teacher: UserPayload = Depends(require_teacher)
+    teacher: UserPayload = Depends(require_teacher),
 ):
     # Check if subject code already used
     existing = supabase_service.get_subject_by_code(req.subject_code)
@@ -45,6 +45,74 @@ def create_new_subject(
     subject["total_classes"] = 0
     return subject
 
+
+# ==========================================
+# IMPORTANT: Static/named routes MUST come before /{subject_id}
+# to prevent FastAPI from treating 'enroll' and 'student' as integers.
+# ==========================================
+
+@router.post("/enroll")
+def enroll_student_manual(
+    req: EnrollRequest,
+    student: UserPayload = Depends(require_student)
+):
+    subject = supabase_service.get_subject_by_code(req.subject_code)
+    if not subject:
+        raise HTTPException(status_code=404, detail="Invalid subject code. Course not found.")
+
+    try:
+        supabase_service.enroll_student(student.id, subject["subject_id"])
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {
+        "message": f"Successfully enrolled in {subject['name']} ({subject['subject_code']}).",
+        "subject": subject,
+    }
+
+
+@router.get("/student/my-subjects")
+def get_my_enrolled_subjects(student: UserPayload = Depends(require_student)):
+    records = supabase_service.get_student_subjects(student.id)
+    attendance_records = supabase_service.get_student_attendance_records(student.id)
+
+    # Compute attendance per subject
+    stats_map = {}
+    for log in attendance_records:
+        sid = log.get("subject_id")
+        if sid not in stats_map:
+            stats_map[sid] = {"total": 0, "attended": 0}
+        stats_map[sid]["total"] += 1
+        if log.get("is_present"):
+            stats_map[sid]["attended"] += 1
+
+    result = []
+    for node in records:
+        sub = node.get("subjects")
+        if not sub:
+            continue
+        sid = sub["subject_id"]
+        stat = stats_map.get(sid, {"total": 0, "attended": 0})
+        total = stat["total"]
+        attended = stat["attended"]
+        rate = round((attended / total * 100), 1) if total > 0 else 0.0
+
+        result.append({
+            "subject_id": sid,
+            "subject_code": sub["subject_code"],
+            "name": sub["name"],
+            "section": sub.get("section", ""),
+            "total_classes": total,
+            "attended_classes": attended,
+            "attendance_rate": rate,
+        })
+
+    return result
+
+
+# ==========================================
+# Routes with dynamic {subject_id} — must come AFTER static routes
+# ==========================================
 
 @router.get("/{subject_id}")
 def get_subject_details(
@@ -128,29 +196,6 @@ def get_subject_share_details(
     )
 
 
-# ==========================================
-# Student Enrollment Routes
-# ==========================================
-@router.post("/enroll")
-def enroll_student_manual(
-    req: EnrollRequest,
-    student: UserPayload = Depends(require_student)
-):
-    subject = supabase_service.get_subject_by_code(req.subject_code)
-    if not subject:
-        raise HTTPException(status_code=404, detail="Invalid subject code. Course not found.")
-
-    try:
-        supabase_service.enroll_student(student.id, subject["subject_id"])
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-
-    return {
-        "message": f"Successfully enrolled in {subject['name']} ({subject['subject_code']}).",
-        "subject": subject,
-    }
-
-
 @router.delete("/{subject_id}/enroll")
 def unenroll_student(
     subject_id: int,
@@ -158,43 +203,4 @@ def unenroll_student(
 ):
     success = supabase_service.unenroll_student(student.id, subject_id)
     return {"success": success, "message": "Successfully unenrolled from course."}
-
-
-@router.get("/student/my-subjects")
-def get_my_enrolled_subjects(student: UserPayload = Depends(require_student)):
-    records = supabase_service.get_student_subjects(student.id)
-    attendance_records = supabase_service.get_student_attendance_records(student.id)
-
-    # Compute attendance per subject
-    stats_map = {}
-    for log in attendance_records:
-        sid = log.get("subject_id")
-        if sid not in stats_map:
-            stats_map[sid] = {"total": 0, "attended": 0}
-        stats_map[sid]["total"] += 1
-        if log.get("is_present"):
-            stats_map[sid]["attended"] += 1
-
-    result = []
-    for node in records:
-        sub = node.get("subjects")
-        if not sub:
-            continue
-        sid = sub["subject_id"]
-        stat = stats_map.get(sid, {"total": 0, "attended": 0})
-        total = stat["total"]
-        attended = stat["attended"]
-        rate = round((attended / total * 100), 1) if total > 0 else 0.0
-
-        result.append({
-            "subject_id": sid,
-            "subject_code": sub["subject_code"],
-            "name": sub["name"],
-            "section": sub.get("section", ""),
-            "total_classes": total,
-            "attended_classes": attended,
-            "attendance_rate": rate,
-        })
-
-    return result
 

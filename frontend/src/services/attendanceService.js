@@ -16,7 +16,15 @@ export const attendanceService = {
   async processVoiceAttendance(subjectId, audioBlob) {
     const formData = new FormData()
     formData.append('subject_id', subjectId)
-    formData.append('audio_file', audioBlob, 'classroom_audio.wav')
+    // Derive a sensible extension from the blob MIME type so the backend can decode it
+    const ext =
+      audioBlob.type.includes('ogg') ? 'ogg'
+      : audioBlob.type.includes('webm') ? 'webm'
+      : audioBlob.type.includes('mp4') ? 'mp4'
+      : 'wav'
+    const filename = `classroom_audio.${ext}`
+    const audioFile = audioBlob instanceof File ? audioBlob : new File([audioBlob], filename, { type: audioBlob.type || 'audio/webm' })
+    formData.append('audio_file', audioFile, audioFile.name)
     const res = await api.post('/attendance/voice/process', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     })

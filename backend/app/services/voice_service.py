@@ -44,14 +44,19 @@ def identify_speaker_segment(
     """
     Match utterance embedding against candidate student voice profiles using cosine similarity.
     Returns (student_id, score) if score >= threshold, else (None, best_score).
+    Embeddings are L2-normalized before computing cosine similarity.
     """
     best_sid = None
     best_score = -1.0
 
+    # Normalize query embedding for true cosine similarity
+    embedding_norm = embedding / (np.linalg.norm(embedding) + 1e-8)
+
     for sid, stored_embedding in candidates_dict.items():
         if stored_embedding and len(stored_embedding) == 256:
             cand_vec = np.array(stored_embedding, dtype=np.float32)
-            similarity = float(np.dot(embedding, cand_vec))
+            cand_norm = cand_vec / (np.linalg.norm(cand_vec) + 1e-8)
+            similarity = float(np.dot(embedding_norm, cand_norm))
             if similarity > best_score:
                 best_score = similarity
                 best_sid = sid

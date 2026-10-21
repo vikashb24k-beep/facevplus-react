@@ -29,7 +29,19 @@ export const VoiceAttendanceModal = ({
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-      mediaRecorderRef.current = new MediaRecorder(stream)
+
+      // Determine best supported MIME type for recording
+      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : MediaRecorder.isTypeSupported('audio/webm')
+        ? 'audio/webm'
+        : MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')
+        ? 'audio/ogg;codecs=opus'
+        : ''
+
+      mediaRecorderRef.current = mimeType
+        ? new MediaRecorder(stream, { mimeType })
+        : new MediaRecorder(stream)
 
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -38,7 +50,8 @@ export const VoiceAttendanceModal = ({
       }
 
       mediaRecorderRef.current.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
+        const recordedMime = mediaRecorderRef.current.mimeType || 'audio/webm'
+        const blob = new Blob(audioChunksRef.current, { type: recordedMime })
         setAudioBlob(blob)
         setAudioUrl(URL.createObjectURL(blob))
         // Stop audio tracks
@@ -83,7 +96,13 @@ export const VoiceAttendanceModal = ({
     setLoading(true)
     setError('')
     try {
-      const result = await attendanceService.processVoiceAttendance(subjectId, audioBlob)
+      // Use a consistent filename; librosa handles webm/ogg/wav on the backend
+      const filename =
+        audioBlob.type.includes('ogg') ? 'classroom_audio.ogg'
+        : audioBlob.type.includes('webm') ? 'classroom_audio.webm'
+        : 'classroom_audio.wav'
+      const audioFile = new File([audioBlob], filename, { type: audioBlob.type })
+      const result = await attendanceService.processVoiceAttendance(subjectId, audioFile)
       onAnalysisComplete(result)
       onClose()
     } catch (err) {
