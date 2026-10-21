@@ -3,7 +3,7 @@ import segno
 import io
 @st.dialog("Share Class Link")
 def share_subject_dialog(subject_code, subject_name):
-    app_domain = "facevplusv.streamlit.app"
+    app_domain = "facevplus-v2.streamlit.app"
     join_url = f"{app_domain}/?join-code={subject_code}"
 
     st.header(f"Share {subject_name}")
