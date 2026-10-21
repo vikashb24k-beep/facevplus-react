@@ -22,6 +22,10 @@ class EnrollRequest(BaseModel):
     subject_code: str = Field(..., min_length=2, max_length=20)
 
 
+class JoinSubjectRequest(BaseModel):
+    invite_code: str = Field(..., min_length=2, max_length=20)
+
+
 class ShareSubjectResponse(BaseModel):
     subject_id: int
     subject_code: str
@@ -29,3 +33,11 @@ class ShareSubjectResponse(BaseModel):
     join_url: str
     qr_data_url: str
 
+
+class InvitationResponse(BaseModel):
+    invite_code: str
+    subject_id: int
+    subject_code: str
+    subject_name: str
+    section: str
+    teacher_name: str

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Webcam from 'react-webcam'
 import { useAuth } from '../../context/AuthContext'
 import { authService } from '../../services/authService'
@@ -38,6 +38,8 @@ export const StudentRegister = () => {
 
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnPath = searchParams.get('return')?.startsWith('/') ? searchParams.get('return') : '/student/dashboard'
 
   // Snap photo from webcam
   const handleCapturePhoto = useCallback(async () => {
@@ -124,7 +126,7 @@ export const StudentRegister = () => {
       const data = await authService.registerStudent(name.trim(), capturedPhotoBlob, voiceBlob)
       setSuccess(`Profile created! Welcome to FaceVPlus, ${data.user.name}.`)
       login(data.access_token, data.user)
-      setTimeout(() => navigate('/student/dashboard'), 1500)
+      setTimeout(() => navigate(returnPath, { replace: true }), 1500)
     } catch (err) {
       setError(err.response?.data?.detail || 'Registration failed. Please try again.')
     } finally {
@@ -259,7 +261,7 @@ export const StudentRegister = () => {
 
         <div className="border-t border-slate-800 pt-5 text-center text-xs text-slate-400">
           Already have an account?{' '}
-          <Link to="/student/login" className="font-semibold text-indigo-400 hover:text-indigo-300">
+          <Link to={`/student/login?return=${encodeURIComponent(returnPath)}`} className="font-semibold text-indigo-400 hover:text-indigo-300">
             Sign in with Face-ID
           </Link>
         </div>
@@ -267,4 +269,3 @@ export const StudentRegister = () => {
     </div>
   )
 }
-

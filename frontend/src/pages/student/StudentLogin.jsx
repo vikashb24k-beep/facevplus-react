@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Webcam from 'react-webcam'
 import { useAuth } from '../../context/AuthContext'
 import { authService } from '../../services/authService'
@@ -14,8 +14,11 @@ export const StudentLogin = () => {
 
   const { login } = useAuth()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const returnPath = searchParams.get('return')?.startsWith('/') ? searchParams.get('return') : '/student/dashboard'
 
   const handleFaceLogin = useCallback(async () => {
+    if (loading) return
     if (!webcamRef.current) return
     const imageSrc = webcamRef.current.getScreenshot()
     if (!imageSrc) {
@@ -34,7 +37,7 @@ export const StudentLogin = () => {
 
       setSuccess(`Welcome back, ${data.user.name}!`)
       login(data.access_token, data.user)
-      setTimeout(() => navigate('/student/dashboard'), 1200)
+      setTimeout(() => navigate(returnPath, { replace: true }), 1200)
     } catch (err) {
       setError(
         err.response?.data?.detail ||
@@ -108,4 +111,3 @@ export const StudentLogin = () => {
     </div>
   )
 }
-

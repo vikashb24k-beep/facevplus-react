@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional
+from uuid import uuid4
 import bcrypt
 import jwt
 from backend.app.core.config import settings
+
+_revoked_token_ids: set[str] = set()
 
 
 def hash_password(password: str) -> str:
@@ -34,7 +37,7 @@ def create_access_token(
         expire = now + expires_delta
     else:
         expire = now + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode.update({"exp": expire, "iat": now})
+    to_encode.update({"exp": expire, "iat": now, "jti": str(uuid4())})
     encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
     return encoded_jwt
 
@@ -51,3 +54,15 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
     except jwt.PyJWTError:
         return None
 
+
+def revoke_access_token(token: str) -> None:
+    """Revoke a token for the lifetime of this API process."""
+    payload = decode_access_token(token)
+    if payload and payload.get("jti"):
+        _revoked_token_ids.add(payload["jti"])
+
+
+def is_access_token_revoked(token: str) -> bool:
+    """Return whether a successfully decoded token has been revoked."""
+    payload = decode_access_token(token)
+    return bool(payload and payload.get("jti") in _revoked_token_ids)

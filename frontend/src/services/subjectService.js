@@ -26,6 +26,16 @@ export const subjectService = {
     return res.data
   },
 
+  async getInvitation(inviteCode) {
+    const res = await api.get(`/invitations/${encodeURIComponent(inviteCode)}`)
+    return res.data
+  },
+
+  async joinSubject(inviteCode) {
+    const res = await api.post('/subjects/join', { invite_code: inviteCode })
+    return res.data
+  },
+
   async enrollStudent(subjectCode) {
     const res = await api.post('/subjects/enroll', { subject_code: subjectCode })
     return res.data
@@ -41,4 +51,3 @@ export const subjectService = {
     return res.data
   },
 }
-

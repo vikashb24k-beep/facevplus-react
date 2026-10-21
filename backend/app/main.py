@@ -23,6 +23,7 @@ app.add_middleware(
 # Register API routes
 app.include_router(auth.router, prefix="/api")
 app.include_router(subjects.router, prefix="/api")
+app.include_router(subjects.invitation_router, prefix="/api")
 app.include_router(attendance.router, prefix="/api")
 
 
@@ -42,4 +43,3 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "An internal server error occurred.", "error": str(exc)},
     )
-

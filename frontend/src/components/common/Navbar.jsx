@@ -9,7 +9,7 @@ export const Navbar = () => {
 
   const handleLogout = async () => {
     await logout()
-    navigate('/')
+    navigate('/', { replace: true })
   }
 
   return (
@@ -78,4 +78,3 @@ export const Navbar = () => {
     </header>
   )
 }
-

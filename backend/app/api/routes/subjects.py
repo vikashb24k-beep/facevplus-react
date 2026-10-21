@@ -10,11 +10,14 @@ from backend.app.schemas.subject import (
     SubjectCreate,
     SubjectResponse,
     EnrollRequest,
+    JoinSubjectRequest,
+    InvitationResponse,
     ShareSubjectResponse,
 )
 from backend.app.services import supabase_service
 
 router = APIRouter(prefix="/subjects", tags=["Subjects"])
+invitation_router = APIRouter(prefix="/invitations", tags=["Invitations"])
 
 
 @router.get("", response_model=List[SubjectResponse])
@@ -66,6 +69,58 @@ def enroll_student_manual(
         raise HTTPException(status_code=400, detail=str(e))
 
     return {
+        "message": f"Successfully enrolled in {subject['name']} ({subject['subject_code']}).",
+        "subject": subject,
+    }
+
+
+@invitation_router.get("/{invite_code}", response_model=InvitationResponse)
+def get_invitation(invite_code: str):
+    subject = supabase_service.get_subject_by_code(invite_code)
+    if not subject:
+        raise HTTPException(status_code=404, detail="This invitation is invalid or expired.")
+
+    teacher = supabase_service.get_teacher_by_id(subject["teacher_id"])
+    return InvitationResponse(
+        invite_code=subject["subject_code"],
+        subject_id=subject["subject_id"],
+        subject_code=subject["subject_code"],
+        subject_name=subject["name"],
+        section=subject.get("section", ""),
+        teacher_name=teacher["name"] if teacher else "Your teacher",
+    )
+
+
+@router.post("/join")
+def join_subject(
+    req: JoinSubjectRequest,
+    student: UserPayload = Depends(require_student),
+):
+    subject = supabase_service.get_subject_by_code(req.invite_code)
+    if not subject:
+        raise HTTPException(status_code=404, detail="This invitation is invalid or expired.")
+
+    if supabase_service.is_student_enrolled(student.id, subject["subject_id"]):
+        return {
+            "success": True,
+            "already_enrolled": True,
+            "message": f"You are already enrolled in {subject['name']}.",
+            "subject": subject,
+        }
+
+    try:
+        supabase_service.enroll_student(student.id, subject["subject_id"])
+    except ValueError:
+        return {
+            "success": True,
+            "already_enrolled": True,
+            "message": f"You are already enrolled in {subject['name']}.",
+            "subject": subject,
+        }
+
+    return {
+        "success": True,
+        "already_enrolled": False,
         "message": f"Successfully enrolled in {subject['name']} ({subject['subject_code']}).",
         "subject": subject,
     }
@@ -167,18 +222,13 @@ def get_subject_share_details(
     subject = supabase_service.get_subject_by_id(subject_id)
     if not subject:
         raise HTTPException(status_code=404, detail="Subject not found.")
+    if subject["teacher_id"] != teacher.id:
+        raise HTTPException(status_code=403, detail="You do not own this subject.")
 
     # Determine dynamic frontend URL
     frontend_base = settings.FRONTEND_URL.rstrip("/")
-    referer = request.headers.get("referer")
-    if referer:
-        # e.g. http://localhost:5173/teacher/dashboard
-        from urllib.parse import urlparse
-        parsed = urlparse(referer)
-        if parsed.scheme and parsed.netloc:
-            frontend_base = f"{parsed.scheme}://{parsed.netloc}"
-
-    join_url = f"{frontend_base}/student/enroll?code={subject['subject_code']}"
+    from urllib.parse import quote
+    join_url = f"{frontend_base}/join/{quote(subject['subject_code'], safe='')}"
 
     # Generate QR Code
     qr = segno.make(join_url)
@@ -203,4 +253,3 @@ def unenroll_student(
 ):
     success = supabase_service.unenroll_student(student.id, subject_id)
     return {"success": success, "message": "Successfully unenrolled from course."}
-

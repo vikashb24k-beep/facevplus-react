@@ -1,4 +1,4 @@
-import api from './api'
+import api, { clearStoredAuth } from './api'
 
 export const authService = {
   async registerTeacher(data) {
@@ -44,8 +44,6 @@ export const authService = {
     } catch (_e) {
       // Ignore network errors on logout
     }
-    localStorage.removeItem('facevplus_token')
-    localStorage.removeItem('facevplus_user')
+    clearStoredAuth()
   },
 }
-

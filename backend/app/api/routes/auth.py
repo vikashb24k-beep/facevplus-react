@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi.security import HTTPAuthorizationCredentials
 from typing import Optional
-from backend.app.core.security import hash_password, verify_password, create_access_token
+from backend.app.core.security import hash_password, verify_password, create_access_token, revoke_access_token
 from backend.app.schemas.auth import (
     TeacherRegisterRequest,
     TeacherLoginRequest,
@@ -8,7 +9,7 @@ from backend.app.schemas.auth import (
     UserPayload,
 )
 from backend.app.services import supabase_service, face_service, voice_service
-from backend.app.api.deps import get_current_user
+from backend.app.api.deps import get_current_user, security
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -150,6 +151,10 @@ def get_me(current_user: UserPayload = Depends(get_current_user)):
 
 
 @router.post("/logout")
-def logout():
+def logout(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    _current_user: UserPayload = Depends(get_current_user),
+):
+    if credentials:
+        revoke_access_token(credentials.credentials)
     return {"message": "Logged out successfully."}
-

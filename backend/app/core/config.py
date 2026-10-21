@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     SUPABASE_KEY: str = ""
 
     # Security & JWT
-    JWT_SECRET: str = "facevplus-super-secure-jwt-secret-key-production-ready-2026"
+    JWT_SECRET: str = ""
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
 
@@ -43,6 +43,9 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+if not settings.JWT_SECRET:
+    settings.JWT_SECRET = os.urandom(32).hex()
+
 # Fallback to .streamlit/secrets.toml if Supabase credentials are missing
 if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
     secrets_path = BASE_DIR / ".streamlit" / "secrets.toml"
@@ -54,4 +57,3 @@ if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
             settings.SUPABASE_KEY = settings.SUPABASE_KEY or secrets.get("SUPABASE_KEY", "")
         except Exception:
             pass
-

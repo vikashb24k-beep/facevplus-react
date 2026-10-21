@@ -1,15 +1,19 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { authService } from '../services/authService'
+import { clearStoredAuth } from '../services/api'
 
 const AuthContext = createContext(null)
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('facevplus_user')
-    return saved ? JSON.parse(saved) : null
-  })
+  const [user, setUser] = useState(null)
   const [token, setToken] = useState(() => localStorage.getItem('facevplus_token'))
   const [loading, setLoading] = useState(true)
+
+  const clearSession = useCallback(() => {
+    setUser(null)
+    setToken(null)
+    clearStoredAuth(false)
+  }, [])
 
   useEffect(() => {
     const verifyUser = async () => {
@@ -20,20 +24,25 @@ export const AuthProvider = ({ children }) => {
           setUser(userData)
           localStorage.setItem('facevplus_user', JSON.stringify(userData))
         } catch (_err) {
-          console.warn('Session expired or invalid token.')
-          setUser(null)
-          setToken(null)
-          localStorage.removeItem('facevplus_token')
-          localStorage.removeItem('facevplus_user')
+          clearSession()
         }
       }
       setLoading(false)
     }
 
     verifyUser()
-  }, [])
+  }, [clearSession])
+
+  useEffect(() => {
+    const handleUnauthorized = () => clearSession()
+    window.addEventListener('facevplus:unauthorized', handleUnauthorized)
+    return () => window.removeEventListener('facevplus:unauthorized', handleUnauthorized)
+  }, [clearSession])
 
   const login = (accessToken, userData) => {
+    if (!accessToken || !userData?.id || !userData?.role) {
+      throw new Error('Invalid authentication response.')
+    }
     setToken(accessToken)
     setUser(userData)
     localStorage.setItem('facevplus_token', accessToken)
@@ -41,11 +50,11 @@ export const AuthProvider = ({ children }) => {
   }
 
   const logout = async () => {
-    await authService.logout()
-    setToken(null)
-    setUser(null)
-    localStorage.removeItem('facevplus_token')
-    localStorage.removeItem('facevplus_user')
+    try {
+      await authService.logout()
+    } finally {
+      clearSession()
+    }
   }
 
   const value = {
@@ -69,4 +78,3 @@ export const useAuth = () => {
   }
   return context
 }
-

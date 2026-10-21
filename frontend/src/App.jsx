@@ -50,6 +50,7 @@ function App() {
               <Route path="/student/login" element={<StudentLogin />} />
               <Route path="/student/register" element={<StudentRegister />} />
               <Route path="/student/enroll" element={<StudentAutoEnroll />} />
+              <Route path="/join/:inviteCode" element={<StudentAutoEnroll />} />
 
               {/* Protected Teacher Routes */}
               <Route

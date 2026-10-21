@@ -16,6 +16,7 @@ export const TeacherLogin = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (loading) return
     if (!formData.username || !formData.password) {
       setError('Please enter both username and password.')
       return
@@ -90,4 +91,3 @@ export const TeacherLogin = () => {
     </div>
   )
 }
-

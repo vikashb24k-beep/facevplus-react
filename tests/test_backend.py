@@ -99,6 +99,18 @@ def test_teacher_subject_endpoints():
         assert "join_url" in share_data
         assert "qr_data_url" in share_data
         assert share_data["qr_data_url"].startswith("data:image/png;base64,")
+        assert "/join/" in share_data["join_url"]
+        invitation_res = client.get(f"/api/invitations/{share_data['subject_code']}")
+        assert invitation_res.status_code == 200
+        assert invitation_res.json()["subject_name"] == share_data["subject_name"]
+
+
+def test_invitation_validation_and_join_requires_student_auth():
+    invalid = client.get("/api/invitations/NOT_A_REAL_INVITE")
+    assert invalid.status_code == 404
+
+    unauthorized = client.post("/api/subjects/join", json={"invite_code": "CS101"})
+    assert unauthorized.status_code == 401
 
 
 def test_attendance_session_confirm():
@@ -171,7 +183,25 @@ def test_teacher_cannot_access_other_teachers_subject():
 
     res = client.delete("/api/subjects/3", headers=headers)
     # Subject exists but is owned by teacher 3, not 999 — should be 403 or 404
-    assert res.status_code in (403, 404)
+    assert res.status_code in (401, 403, 404)
+
+
+def test_logout_revokes_token():
+    token = create_access_token({"sub": "3", "username": "prof_test", "role": "teacher"})
+    headers = {"Authorization": f"Bearer {token}"}
+
+    logout_res = client.post("/api/auth/logout", headers=headers)
+    assert logout_res.status_code == 200
+
+    protected_res = client.get("/api/subjects", headers=headers)
+    assert protected_res.status_code == 401
+
+
+def test_token_role_and_identity_are_verified_server_side():
+    # A valid teacher ID cannot be presented as a student identity.
+    token = create_access_token({"sub": "3", "name": "fake", "role": "student"})
+    res = client.get("/api/subjects/student/my-subjects", headers={"Authorization": f"Bearer {token}"})
+    assert res.status_code == 401
 
 
 def test_student_cannot_access_teacher_endpoints():
@@ -192,4 +222,3 @@ def test_student_cannot_access_teacher_endpoints():
         headers=headers,
     )
     assert res2.status_code == 403
-

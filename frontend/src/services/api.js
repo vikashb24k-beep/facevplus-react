@@ -9,6 +9,12 @@ const api = axios.create({
   },
 })
 
+export const clearStoredAuth = (notify = true) => {
+  localStorage.removeItem('facevplus_token')
+  localStorage.removeItem('facevplus_user')
+  if (notify) window.dispatchEvent(new Event('facevplus:unauthorized'))
+}
+
 // Request interceptor to attach JWT token
 api.interceptors.request.use(
   (config) => {
@@ -27,15 +33,10 @@ api.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       // Clear token if invalid or expired
-      const isAuthCheck = error.config.url.includes('/auth/me')
-      if (isAuthCheck) {
-        localStorage.removeItem('facevplus_token')
-        localStorage.removeItem('facevplus_user')
-      }
+      clearStoredAuth()
     }
     return Promise.reject(error)
   }
 )
 
 export default api
-
