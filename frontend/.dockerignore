@@ -1,0 +1,18 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Vite build output
+dist/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+.env.*
+!.env.example
+

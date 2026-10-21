@@ -1,0 +1,51 @@
+services:
+  # ─── FastAPI Backend ──────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: facevplus-backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      - APP_ENV=production
+      - CORS_ORIGINS=http://localhost,http://localhost:80
+      - FRONTEND_URL=http://localhost
+    volumes:
+      # Persist any ML model cache across restarts
+      - ml_cache:/home/appuser/.cache
+    networks:
+      - facevplus-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s   # dlib model loading takes time
+
+  # ─── React Frontend (Nginx) ───────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+        VITE_APP_URL: http://localhost
+    container_name: facevplus-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - facevplus-net
+
+networks:
+  facevplus-net:
+    driver: bridge
+
+volumes:
+  ml_cache:
+
