@@ -155,8 +155,9 @@ source venv/bin/activate
 If `requirements.txt` exists:
 
 ```bash
+python -m pip --version
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
 If the dependency file does not exist, create one from your working environment only after checking that the environment contains the packages needed by the project:

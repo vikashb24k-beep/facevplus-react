@@ -92,7 +92,7 @@ def home_screen():
     with col1:
         st.header("Student")
         mascot_student()
-        if st.button('Student Portal', type='primary',
+        if st.button('Student Portal', type='secondary',
                      icon=':material/arrow_outward:', icon_position='right'):
             st.session_state['login_type'] = 'student'
             st.rerun()
@@ -100,7 +100,7 @@ def home_screen():
     with col2:
         st.header("Teacher")
         mascot_teacher()
-        if st.button('Teacher Portal', type='primary',
+        if st.button('Teacher Portal', type='secondary',
                      icon=':material/arrow_outward:', icon_position='right'):
             st.session_state['login_type'] = 'teacher'
             st.rerun()
