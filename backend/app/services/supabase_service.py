@@ -79,12 +79,14 @@ def get_student_by_id(student_id: int) -> Optional[Dict[str, Any]]:
 
 
 def create_student(
+    student_id: int,
     name: str,
     face_embedding: Optional[List[float]] = None,
     voice_embedding: Optional[List[float]] = None
 ) -> Dict[str, Any]:
     client = get_supabase()
     data = {
+        "student_id": student_id,
         "name": name.strip(),
         "face_embedding": face_embedding,
         "voice_embedding": voice_embedding,
@@ -155,6 +157,20 @@ def get_subject_by_id(subject_id: int) -> Optional[Dict[str, Any]]:
     return res.data[0] if res.data else None
 
 
+def get_teacher_subject_by_id(subject_id: int, teacher_id: int) -> Optional[Dict[str, Any]]:
+    """Return a subject only when it belongs to the requesting teacher."""
+    client = get_supabase()
+    res = (
+        client.table("subjects")
+        .select("subject_id, subject_code, name, section, teacher_id")
+        .eq("subject_id", subject_id)
+        .eq("teacher_id", teacher_id)
+        .limit(1)
+        .execute()
+    )
+    return res.data[0] if res.data else None
+
+
 def create_subject(
     subject_code: str, name: str, section: str, teacher_id: int
 ) -> Dict[str, Any]:
@@ -203,6 +219,18 @@ def get_enrolled_students(subject_id: int) -> List[Dict[str, Any]]:
         if s:
             students.append(s)
     return students
+
+
+def get_subject_enrollment_records(subject_id: int) -> List[Dict[str, Any]]:
+    """Fetch the roster using the verified subject_students and students columns."""
+    client = get_supabase()
+    res = (
+        client.table("subject_students")
+        .select("student_id, subject_id, students(student_id, name)")
+        .eq("subject_id", subject_id)
+        .execute()
+    )
+    return res.data or []
 
 
 def get_student_subjects(student_id: int) -> List[Dict[str, Any]]:
@@ -279,6 +307,18 @@ def get_student_attendance_records(student_id: int) -> List[Dict[str, Any]]:
         client.table("attendance_logs")
         .select("id, timestamp, subject_id, student_id, is_present, subjects(*)")
         .eq("student_id", student_id)
+        .order("timestamp", desc=True)
+        .execute()
+    )
+    return res.data or []
+
+
+def get_subject_attendance_logs(subject_id: int) -> List[Dict[str, Any]]:
+    client = get_supabase()
+    res = (
+        client.table("attendance_logs")
+        .select("id, timestamp, subject_id, student_id, is_present")
+        .eq("subject_id", subject_id)
         .order("timestamp", desc=True)
         .execute()
     )

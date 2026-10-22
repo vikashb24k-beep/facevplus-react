@@ -10,6 +10,8 @@ import { HomePage } from './pages/HomePage'
 import { TeacherLogin } from './pages/teacher/TeacherLogin'
 import { TeacherRegister } from './pages/teacher/TeacherRegister'
 import { TeacherDashboard } from './pages/teacher/TeacherDashboard'
+import { TeacherAttendanceRegister } from './pages/teacher/TeacherAttendanceRegister'
+import { TeacherStudentAttendanceHistory } from './pages/teacher/TeacherStudentAttendanceHistory'
 import { StudentLogin } from './pages/student/StudentLogin'
 import { StudentRegister } from './pages/student/StudentRegister'
 import { StudentDashboard } from './pages/student/StudentDashboard'
@@ -60,6 +62,14 @@ function App() {
                     <TeacherDashboard />
                   </TeacherRoute>
                 }
+              />
+              <Route
+                path="/teacher/subjects/:subjectId/register"
+                element={<TeacherRoute><TeacherAttendanceRegister /></TeacherRoute>}
+              />
+              <Route
+                path="/teacher/subjects/:subjectId/students/:studentId"
+                element={<TeacherRoute><TeacherStudentAttendanceHistory /></TeacherRoute>}
               />
 
               {/* Protected Student Routes */}

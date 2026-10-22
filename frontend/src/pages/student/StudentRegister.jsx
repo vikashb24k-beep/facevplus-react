@@ -3,11 +3,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import Webcam from 'react-webcam'
 import { useAuth } from '../../context/AuthContext'
 import { authService } from '../../services/authService'
-import { Input } from '../../components/common/Input'
-import { Button } from '../../components/common/Button'
+import '../../styles/student/student-registration.css'
 import {
   GraduationCap,
-  User,
   Camera,
   Mic,
   Square,
@@ -19,6 +17,7 @@ import {
 
 export const StudentRegister = () => {
   const [name, setName] = useState('')
+  const [studentId, setStudentId] = useState('')
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState(null)
   const [capturedPhotoBlob, setCapturedPhotoBlob] = useState(null)
 
@@ -112,6 +111,10 @@ export const StudentRegister = () => {
       setError('Please enter your full name.')
       return
     }
+    if (!/^[1-9]\d*$/.test(studentId.trim())) {
+      setError('Please enter your numeric registration or roll number.')
+      return
+    }
 
     if (!capturedPhotoBlob) {
       setError('Please capture your facial snapshot for registration.')
@@ -123,7 +126,7 @@ export const StudentRegister = () => {
     setSuccess('')
 
     try {
-      const data = await authService.registerStudent(name.trim(), capturedPhotoBlob, voiceBlob)
+      const data = await authService.registerStudent(studentId.trim(), name.trim(), capturedPhotoBlob, voiceBlob)
       setSuccess(`Profile created! Welcome to FaceVPlus, ${data.user.name}.`)
       login(data.access_token, data.user)
       setTimeout(() => navigate(returnPath, { replace: true }), 1500)
@@ -135,133 +138,111 @@ export const StudentRegister = () => {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center px-4 py-12">
-      <div className="w-full max-w-xl space-y-6 rounded-3xl border border-slate-800 bg-slate-900/90 p-8 shadow-2xl shadow-black/40">
-        <div className="text-center">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 mb-4 shadow-inner">
-            <GraduationCap className="h-7 w-7" />
+    <div className="student-registration">
+      <div className="student-registration__card">
+        <div className="student-registration__header">
+          <div className="student-registration__icon">
+            <GraduationCap size={20} />
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-white">Student Registration</h2>
-          <p className="mt-1 text-xs text-slate-400">Enroll your face and voice biometrics once</p>
+          <div>
+            <h2>Create your student profile</h2>
+            <p>Enter your details, take one photo, then continue.</p>
+          </div>
         </div>
 
+        <ol className="student-registration__steps">
+          {['Your details', 'Face photo', 'Optional voice'].map((step, index) => (
+            <li key={step}>
+              <strong>{index + 1}.</strong> {step}
+            </li>
+          ))}
+        </ol>
+
         {error && (
-          <div className="flex items-center gap-2 rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400 font-medium">
-            <AlertCircle className="h-4 w-4 shrink-0" />
+          <div className="ui-notice ui-notice--error">
+            <AlertCircle size={16} />
             <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-400 font-medium">
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
+          <div className="ui-notice ui-notice--success">
+            <CheckCircle2 size={16} />
             <span>{success}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <Input
-            label="Full Name"
-            id="student_name"
-            placeholder="e.g. Raman Sharma"
-            icon={User}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+        <form onSubmit={handleSubmit} className="student-registration__form">
+          <div className="student-registration__fields">
+            <div className="plain-field"><label htmlFor="student_name">Full Name</label><input id="student_name" placeholder="e.g. Raman Sharma" value={name} onChange={(e) => setName(e.target.value)} required /></div>
+            <div className="plain-field"><label htmlFor="student_id">Registration / Roll Number</label><input id="student_id" inputMode="numeric" pattern="[0-9]*" placeholder="e.g. 202600123" value={studentId} onChange={(e) => setStudentId(e.target.value.replace(/\D/g, ''))} required /></div>
+          </div>
 
           {/* Face Capture Section */}
-          <div className="space-y-2">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Face ID Snapshot (Required)
-            </label>
+          <div>
+            <p className="student-registration__section-title">
+              2. Take a face photo <span style={{ color: '#f87171' }}>*</span>
+            </p>
+            <p className="student-registration__hint">Use good lighting and make sure only your face is in the frame.</p>
 
-            <div className="relative aspect-video w-full overflow-hidden rounded-2xl border border-slate-800 bg-black shadow-inner">
+            <div className="student-registration__camera">
               {capturedPhotoUrl ? (
-                <img src={capturedPhotoUrl} alt="Snapped" className="h-full w-full object-cover" />
+                <img src={capturedPhotoUrl} alt="Snapped" />
               ) : (
                 <Webcam
                   audio={false}
                   ref={webcamRef}
                   screenshotFormat="image/jpeg"
                   videoConstraints={{ facingMode: 'user', width: 1280, height: 720 }}
-                  className="h-full w-full object-cover"
                 />
               )}
             </div>
 
-            <div className="flex items-center gap-2">
+            <div style={{ marginTop: '0.75rem' }}>
               {!capturedPhotoUrl ? (
-                <Button variant="secondary" onClick={handleCapturePhoto} className="w-full" icon={Camera}>
-                  Snap Photo
-                </Button>
+                <button className="plain-button plain-button--secondary" type="button" onClick={handleCapturePhoto} style={{ width: '100%' }}><Camera size={16} /> Snap photo</button>
               ) : (
-                <Button
-                  variant="tertiary"
-                  onClick={() => {
+                <button className="plain-button plain-button--secondary" type="button" onClick={() => {
                     setCapturedPhotoUrl(null)
                     setCapturedPhotoBlob(null)
-                  }}
-                  className="w-full"
-                  icon={RefreshCw}
-                >
-                  Retake Photo
-                </Button>
+                  }} style={{ width: '100%' }}><RefreshCw size={16} /> Retake photo</button>
               )}
             </div>
           </div>
 
-          {/* Voice Enrollment Section (Optional) */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4 space-y-3">
-            <div className="flex items-center justify-between">
+          <details className="student-registration__voice">
+            <summary>3. Add a voice sample <span>(optional)</span></summary>
+            <div className="student-registration__voice-content">
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                  Voiceprint Enrollment (Recommended)
-                </h4>
-                <p className="text-[11px] text-slate-400">
+              <div>
+                <p className="student-registration__hint">
                   Record saying: <em>"I am present, my name is {name || '...'}"</em>
                 </p>
               </div>
 
               {voiceBlob && (
-                <span className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                <span className="student-registration__hint">
                   Voice Enrolled
                 </span>
               )}
             </div>
 
-            <div className="flex items-center gap-3">
+            <div>
               {!isRecording ? (
-                <Button
-                  type="button"
-                  variant="tertiary"
-                  size="sm"
-                  onClick={startRecording}
-                  icon={Mic}
-                >
-                  {voiceBlob ? 'Record Voice Again' : 'Record Voice (3s)'}
-                </Button>
+                <button className="plain-button plain-button--secondary" type="button" onClick={startRecording}><Mic size={16} /> {voiceBlob ? 'Record voice again' : 'Record voice'}</button>
               ) : (
-                <Button
-                  type="button"
-                  variant="danger"
-                  size="sm"
-                  onClick={stopRecording}
-                  icon={Square}
-                >
-                  Stop ({recordingSeconds}s)
-                </Button>
+                <button className="plain-button plain-button--secondary" type="button" onClick={stopRecording}><Square size={16} /> Stop ({recordingSeconds}s)</button>
               )}
             </div>
-          </div>
+            </div>
+          </details>
 
-          <Button type="submit" variant="primary" size="lg" loading={loading} disabled={Boolean(success)} className="w-full" icon={Sparkles}>
-            Complete Account Registration
-          </Button>
+          <button className="plain-button" type="submit" disabled={loading || Boolean(success)} style={{ width: '100%' }}><Sparkles size={17} /> {loading ? 'Creating profile...' : 'Create student profile'}</button>
         </form>
 
-        <div className="border-t border-slate-800 pt-5 text-center text-xs text-slate-400">
+        <div className="student-registration__signin">
           Already have an account?{' '}
-          <Link to={`/student/login?return=${encodeURIComponent(returnPath)}`} className="font-semibold text-indigo-400 hover:text-indigo-300">
+          <Link to={`/student/login?return=${encodeURIComponent(returnPath)}`}>
             Sign in with Face-ID
           </Link>
         </div>

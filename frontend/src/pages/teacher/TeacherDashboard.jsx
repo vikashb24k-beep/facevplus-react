@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { subjectService } from '../../services/subjectService'
 import { attendanceService } from '../../services/attendanceService'
@@ -26,6 +27,7 @@ import {
 
 export const TeacherDashboard = () => {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [currentTab, setCurrentTab] = useState('take_attendance')
 
   // Subject state
@@ -402,6 +404,7 @@ export const TeacherDashboard = () => {
                     setSharingSubject(s)
                     setIsShareModalOpen(true)
                   }}
+                  onOpenRegister={(s) => navigate(`/teacher/subjects/${s.subject_id}/register`)}
                   onDelete={handleDeleteSubject}
                 />
               ))}
@@ -520,4 +523,3 @@ export const TeacherDashboard = () => {
     </div>
   )
 }
-

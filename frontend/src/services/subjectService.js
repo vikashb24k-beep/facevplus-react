@@ -21,6 +21,16 @@ export const subjectService = {
     return res.data
   },
 
+  async getAttendanceRegister(subjectId, params) {
+    const res = await api.get(`/subjects/${subjectId}/attendance-register`, { params })
+    return res.data
+  },
+
+  async getStudentAttendanceHistory(subjectId, studentId) {
+    const res = await api.get(`/subjects/${subjectId}/attendance-register/${studentId}`)
+    return res.data
+  },
+
   async getShareDetails(subjectId) {
     const res = await api.get(`/subjects/${subjectId}/share`)
     return res.data

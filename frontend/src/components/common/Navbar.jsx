@@ -20,7 +20,9 @@ export const Navbar = () => {
             <ShieldCheck className="h-6 w-6 text-white" />
           </div>
           <div>
-            <span className="text-xl font-bold tracking-tight text-white">FaceVPlus</span>
+             <span className=" font-bold bg-gradient-to-r from-indigo-400 via-red-400 to-pink-400 bg-clip-text text-transparent">
+            FaceVplus
+          </span>
             <span className="hidden text-xs text-indigo-400 sm:inline-block sm:ml-2 font-medium">AI Attendance</span>
           </div>
         </Link>
