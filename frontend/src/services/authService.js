@@ -20,8 +20,9 @@ export const authService = {
     return res.data
   },
 
-  async registerStudent(name, faceBlob, voiceBlob = null) {
+  async registerStudent(studentId, name, faceBlob, voiceBlob = null) {
     const formData = new FormData()
+    formData.append('student_id', studentId)
     formData.append('name', name)
     formData.append('face_file', faceBlob, 'registration_face.jpg')
     if (voiceBlob) {

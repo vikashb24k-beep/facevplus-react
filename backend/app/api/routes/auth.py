@@ -90,6 +90,7 @@ async def login_student_face(file: UploadFile = File(...)):
 
 @router.post("/student/register", response_model=TokenResponse)
 async def register_student(
+    student_id: int = Form(...),
     name: str = Form(...),
     face_file: UploadFile = File(...),
     voice_file: Optional[UploadFile] = File(None),
@@ -97,6 +98,10 @@ async def register_student(
     name = name.strip()
     if not name:
         raise HTTPException(status_code=400, detail="Student name is required.")
+    if student_id <= 0:
+        raise HTTPException(status_code=400, detail="Registration number must be a positive whole number.")
+    if supabase_service.get_student_by_id(student_id):
+        raise HTTPException(status_code=400, detail="This registration number is already registered.")
 
     face_bytes = await face_file.read()
     if not face_bytes:
@@ -128,6 +133,7 @@ async def register_student(
             voice_embedding = voice_service.get_voice_embedding(voice_bytes)
 
     student = supabase_service.create_student(
+        student_id=student_id,
         name=name,
         face_embedding=face_embedding,
         voice_embedding=voice_embedding,

@@ -19,6 +19,7 @@ import {
 
 export const StudentRegister = () => {
   const [name, setName] = useState('')
+  const [studentId, setStudentId] = useState('')
   const [capturedPhotoUrl, setCapturedPhotoUrl] = useState(null)
   const [capturedPhotoBlob, setCapturedPhotoBlob] = useState(null)
 
@@ -112,6 +113,10 @@ export const StudentRegister = () => {
       setError('Please enter your full name.')
       return
     }
+    if (!/^[1-9]\d*$/.test(studentId.trim())) {
+      setError('Please enter your numeric registration or roll number.')
+      return
+    }
 
     if (!capturedPhotoBlob) {
       setError('Please capture your facial snapshot for registration.')
@@ -123,7 +128,7 @@ export const StudentRegister = () => {
     setSuccess('')
 
     try {
-      const data = await authService.registerStudent(name.trim(), capturedPhotoBlob, voiceBlob)
+      const data = await authService.registerStudent(studentId.trim(), name.trim(), capturedPhotoBlob, voiceBlob)
       setSuccess(`Profile created! Welcome to FaceVPlus, ${data.user.name}.`)
       login(data.access_token, data.user)
       setTimeout(() => navigate(returnPath, { replace: true }), 1500)
@@ -167,6 +172,19 @@ export const StudentRegister = () => {
             icon={User}
             value={name}
             onChange={(e) => setName(e.target.value)}
+          />
+
+          <Input
+            label="Registration / Roll Number"
+            id="student_id"
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            placeholder="e.g. 202600123"
+            icon={GraduationCap}
+            value={studentId}
+            onChange={(e) => setStudentId(e.target.value.replace(/\D/g, ''))}
+            required
           />
 
           {/* Face Capture Section */}

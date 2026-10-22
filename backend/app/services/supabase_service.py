@@ -79,12 +79,14 @@ def get_student_by_id(student_id: int) -> Optional[Dict[str, Any]]:
 
 
 def create_student(
+    student_id: int,
     name: str,
     face_embedding: Optional[List[float]] = None,
     voice_embedding: Optional[List[float]] = None
 ) -> Dict[str, Any]:
     client = get_supabase()
     data = {
+        "student_id": student_id,
         "name": name.strip(),
         "face_embedding": face_embedding,
         "voice_embedding": voice_embedding,
