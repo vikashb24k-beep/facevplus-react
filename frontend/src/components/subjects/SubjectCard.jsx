@@ -1,5 +1,5 @@
 import React from 'react'
-import { Users, Clock, Share2, Trash2, BookOpen, Calendar, CheckCircle } from 'lucide-react'
+import { Users, Clock, Share2, Trash2, BookOpen, Calendar, CheckCircle, ClipboardList } from 'lucide-react'
 import { Badge } from '../common/Badge'
 
 export const SubjectCard = ({
@@ -7,6 +7,7 @@ export const SubjectCard = ({
   isTeacher = false,
   onShare,
   onDelete,
+  onOpenRegister,
   onUnenroll,
 }) => {
   const { name, subject_code, section, total_students, total_classes, attended_classes, attendance_rate } =
@@ -75,13 +76,24 @@ export const SubjectCard = ({
       <div className="mt-5 flex items-center justify-between border-t border-slate-800/80 pt-4">
         {isTeacher ? (
           <div className="flex w-full items-center justify-between gap-2">
-            <button
-              onClick={() => onShare(subject)}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700 hover:text-white"
-            >
-              <Share2 className="h-3.5 w-3.5 text-indigo-400" />
-              <span>Share Code: {subject_code}</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              {onOpenRegister && (
+                <button
+                  onClick={() => onOpenRegister(subject)}
+                  className="flex items-center gap-1.5 rounded-xl border border-indigo-500/40 bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-200 transition hover:bg-indigo-500/20"
+                >
+                  <ClipboardList className="h-3.5 w-3.5" />
+                  <span>Open Register</span>
+                </button>
+              )}
+              <button
+                onClick={() => onShare(subject)}
+                className="flex items-center gap-1.5 rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-200 transition hover:bg-slate-700 hover:text-white"
+              >
+                <Share2 className="h-3.5 w-3.5 text-indigo-400" />
+                <span>Share Code: {subject_code}</span>
+              </button>
+            </div>
             {onDelete && (
               <button
                 onClick={() => onDelete(subject.subject_id)}
