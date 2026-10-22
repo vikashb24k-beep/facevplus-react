@@ -15,22 +15,15 @@ export const HomePage = () => {
     <div className="flex flex-col gap-16 py-8 sm:py-16">
       {/* Hero Section */}
       <section className="text-center px-4 max-w-4xl mx-auto">
-        <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold text-indigo-300 mb-6">
-          <ScanFace className="h-4 w-4" />
-          <span>Next-Generation Multi-Modal Attendance</span>
-        </div>
+        
 
         <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-6xl sm:leading-tight">
           Smart Attendance Powered by{' '}
-          <span className="bg-gradient-to-r from-indigo-400 via-violet-400 to-pink-400 bg-clip-text text-transparent">
-            Face &amp; Voice AI
+          <span className="bg-gradient-to-r from-indigo-400 via-red-400 to-pink-400 bg-clip-text text-transparent">
+            FaceVplus
           </span>
         </h1>
 
-        <p className="mt-6 text-base sm:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
-          FaceVPlus eliminates tedious roll calls. Capture classroom photos or audio and let our AI
-          recognize enrolled students instantly with enterprise-grade accuracy.
-        </p>
       </section>
 
       {/* Portal Selection Cards */}
@@ -120,46 +113,8 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* Feature Highlights Grid */}
-      <section className="max-w-6xl mx-auto px-4 w-full">
-        <h3 className="text-center text-xs font-bold uppercase tracking-widest text-slate-500 mb-8">
-          Enterprise Multi-Modal Features
-        </h3>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-            <ScanFace className="h-6 w-6 text-indigo-400 mb-3" />
-            <h4 className="text-sm font-bold text-white">Dlib 128D Descriptors</h4>
-            <p className="mt-1 text-xs text-slate-400">
-              Accurate facial feature vectors with pose detection and invariance.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-            <Mic className="h-6 w-6 text-pink-400 mb-3" />
-            <h4 className="text-sm font-bold text-white">Voice Biometrics</h4>
-            <p className="mt-1 text-xs text-slate-400">
-              Resemblyzer deep voiceprints with automatic silence segmentation.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-            <QrCode className="h-6 w-6 text-violet-400 mb-3" />
-            <h4 className="text-sm font-bold text-white">Dynamic QR Enrollment</h4>
-            <p className="mt-1 text-xs text-slate-400">
-              Auto-join codes with camera scan and deep-link integration.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-            <BarChart3 className="h-6 w-6 text-emerald-400 mb-3" />
-            <h4 className="text-sm font-bold text-white">Interactive Review</h4>
-            <p className="mt-1 text-xs text-slate-400">
-              Audit and adjust presence before committing records to Supabase.
-            </p>
-          </div>
-        </div>
-      </section>
+      
+      
     </div>
   )
 }

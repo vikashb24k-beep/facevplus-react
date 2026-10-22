@@ -18,7 +18,7 @@ export const Footer = () => {
         </div>
 
         <div className="text-xs text-slate-600">
-          Biometric face &amp; voice recognition powered by FastAPI &amp; Supabase
+          Biometric face &amp; voice recognition 
         </div>
       </div>
     </footer>
