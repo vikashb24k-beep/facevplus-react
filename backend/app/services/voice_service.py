@@ -1,17 +1,28 @@
 import io
 from typing import Any, Dict, List, Optional, Tuple
-import librosa
 import numpy as np
-from resemblyzer import VoiceEncoder, preprocess_wav
 from backend.app.core.config import settings
 
 _voice_encoder = None
 
 
-def get_voice_encoder() -> VoiceEncoder:
+def _voice_dependencies():
+    """Load optional audio dependencies only when voice features are used."""
+    try:
+        import librosa
+        from resemblyzer import VoiceEncoder, preprocess_wav
+    except ImportError as exc:
+        raise RuntimeError(
+            "Voice recognition dependencies are not installed. Install the backend requirements."
+        ) from exc
+    return librosa, VoiceEncoder, preprocess_wav
+
+
+def get_voice_encoder() -> Any:
     """Lazy-load and cache the VoiceEncoder model."""
     global _voice_encoder
     if _voice_encoder is None:
+        _, VoiceEncoder, _ = _voice_dependencies()
         _voice_encoder = VoiceEncoder()
     return _voice_encoder
 
@@ -24,6 +35,7 @@ def get_voice_embedding(audio_bytes: bytes) -> Optional[List[float]]:
     if not audio_bytes or len(audio_bytes) < 1000:
         return None
     try:
+        librosa, _, preprocess_wav = _voice_dependencies()
         encoder = get_voice_encoder()
         audio, sr = librosa.load(io.BytesIO(audio_bytes), sr=16000)
         if len(audio) < sr * 0.5:
@@ -96,6 +108,7 @@ def process_bulk_audio_attendance(
             "warning": "No enrolled students have registered a voice profile."
         }
 
+    librosa, _, preprocess_wav = _voice_dependencies()
     encoder = get_voice_encoder()
     audio, sr = librosa.load(io.BytesIO(audio_bytes), sr=16000)
 

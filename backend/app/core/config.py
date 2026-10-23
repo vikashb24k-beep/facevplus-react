@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import List, Union
+from typing import List
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Root directory of the repository
@@ -43,17 +43,8 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
+if not settings.JWT_SECRET and settings.APP_ENV == "production":
+    raise RuntimeError("JWT_SECRET must be configured in production")
+
 if not settings.JWT_SECRET:
     settings.JWT_SECRET = os.urandom(32).hex()
-
-# Fallback to .streamlit/secrets.toml if Supabase credentials are missing
-if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
-    secrets_path = BASE_DIR / ".streamlit" / "secrets.toml"
-    if secrets_path.exists():
-        try:
-            import toml
-            secrets = toml.load(secrets_path)
-            settings.SUPABASE_URL = settings.SUPABASE_URL or secrets.get("SUPABASE_URL", "")
-            settings.SUPABASE_KEY = settings.SUPABASE_KEY or secrets.get("SUPABASE_KEY", "")
-        except Exception:
-            pass
